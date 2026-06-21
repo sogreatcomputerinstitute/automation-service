@@ -2,7 +2,6 @@ const puppeteer = require('puppeteer');
 const path = require('path');
 const fs = require('fs');
 const sendAndCleanupScreenshots = require('./sendfeedback.js');
-const { clearInterval } = require('timers');
 
 require('dotenv').config();
 
@@ -12,21 +11,26 @@ if (!fs.existsSync(screenshotDir)){
     fs.mkdirSync(screenshotDir);
 }
 
-let totaltimespent = 0
+let totaltimespent = 0;
+let timerInterval; // Variable to hold our interval reference
+
+function timer(){
+    totaltimespent = totaltimespent + 1;
+}
 
 async function Trustatask() {
     console.log('Opening browser window to watch the task live...');
 
     const sessionPath = path.join(__dirname, 'browser_session');
 
- const browser = await puppeteer.launch({
-        headless: true, // Perfect for Render
-        defaultViewport: { width: 1280, height: 800 }, // Set standard desktop size instead of null/maximized
+    const browser = await puppeteer.launch({
+        headless: true, 
+        defaultViewport: { width: 1280, height: 800 }, 
         userDataDir: sessionPath,
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage' // Prevents memory crashes on cloud servers
+            '--disable-dev-shm-usage' 
         ]
     });
 
@@ -43,70 +47,88 @@ async function Trustatask() {
 
         if (isLoginPage) {
             console.log('Login screen detected. Proceeding with credentials...');
-             setInterval(timer, 1000)
+            
+            // FIXED: Assigned interval to a variable so we can clear it later
+            timerInterval = setInterval(timer, 1000);
+
             const emailSelector = 'input[type="text"]';
             await page.waitForSelector(emailSelector);
-            await page.type(emailSelector, process.env.USER_EMAIL);
+            await page.type(emailSelector, process.env.USER_EMAIL || "");
             console.log('User email entered.');
 
             const passwordSelector = 'input[type="password"]';
             await page.waitForSelector(passwordSelector);
-            await page.type(passwordSelector, process.env.USER_PASS);
+            await page.type(passwordSelector, process.env.USER_PASS || "");
             console.log('Password entered.');
 
             console.log('Searching for "Log in" button...');
             const login_button = 'button[type=submit]';
             await page.waitForSelector(login_button);
-            if (login_button) console.log("Login Button Found!")
-            await page.click(login_button);
-
-            console.log('Click processed. Waiting for navigation to complete...');
-            await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 });
+            
+            // FIXED: Safer click-and-wait navigation handling
+            await Promise.all([
+                page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 }),
+                page.click(login_button)
+            ]);
             console.log('Successfully logged in and redirected!');
-
-            await page.goto('https://trusta.live/tasks', { waitUntil: 'networkidle2', timeout: 5000 });
-            const TaskButton = 'button[data-slot="button"]';
-
-            if (!TaskButton) console.log("Task Already Clicked!")
-            try {
-                await page.waitForSelector(TaskButton)
-                await page.click(TaskButton)
-                await page.screenshot({ path: './screenshots/task_clicked.png', fullPage: true });
-            } catch (e) {
-                await page.screenshot({ path: './screenshots/task_clicked.png', fullPage: true });
-                console.log("Button missing, skipping...");
-            }
-
-            await new Promise(resolve => setTimeout(resolve, 5000));
-
-            await page.goto('https://trusta.live/sponsored', { waitUntil: 'networkidle2', timeout: 90000 });
-            const sponsoredTaskButton = 'button[data-slot="button"]';
-            try{
-                await page.waitForSelector(sponsoredTaskButton)
-                await page.screenshot({ path: './screenshots/sponsored_task_clicked.png', fullPage: true });
-                await page.click(sponsoredTaskButton)
-            }catch(e){
-                await page.screenshot({ path: './screenshots/task_clicked.png', fullPage: true });
-                console.log("Sponsored Task Already Done")
-            }
         } else {
-            console.log('Already logged in. Proceeding to tasks...');
+            console.log('Already logged in via session cache. Proceeding straight to tasks...');
         }
+
+        // --- FIXED: TASK EXECUTION MOVED OUTSIDE OF LOGIN IF-BLOCK ---
+        
+        // 1. REGULAR TASKS
+        console.log('Navigating to regular tasks...');
+        // FIXED: Shifted to domcontentloaded with a safer 30s timeout execution
+        await page.goto('https://trusta.live/tasks', { waitUntil: 'domcontentloaded', timeout: 30000 });
+        
+        const TaskButton = 'button[data-slot="button"]';
+        try {
+            await page.waitForSelector(TaskButton, { timeout: 10000 });
+            await page.click(TaskButton);
+            console.log("Regular task button clicked.");
+            await page.screenshot({ path: './screenshots/task_clicked.png', fullPage: true });
+        } catch (e) {
+            await page.screenshot({ path: './screenshots/task_missing_error.png', fullPage: true });
+            console.log("Regular Task button missing or already clicked, skipping...");
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        // 2. SPONSORED TASKS
+        console.log('Navigating to sponsored tasks...');
+        await page.goto('https://trusta.live/sponsored', { waitUntil: 'domcontentloaded', timeout: 30000 });
+        
+        const sponsoredTaskButton = 'button[data-slot="button"]';
+        try {
+            await page.waitForSelector(sponsoredTaskButton, { timeout: 10000 });
+            await page.click(sponsoredTaskButton);
+            console.log("Sponsored task button clicked.");
+            await page.screenshot({ path: './screenshots/sponsored_task_clicked.png', fullPage: true });
+        } catch (e) {
+            await page.screenshot({ path: './screenshots/sponsored_missing_error.png', fullPage: true });
+            console.log("Sponsored Task Already Done or Missing.");
+        }
+
     } catch (error) {
         console.error('An error occurred during execution:', error);
     } finally {
-        let date = new Date()
-        date.toDateString()
-        clearInterval()
-        await sendAndCleanupScreenshots(`Dear User Your task for this day ${date} has been completed please check screenshots below`, 'https://askninjabot.onrender.com/forwardfeedback');
-        await new Promise(resolve => setTimeout(resolve, 10000));
+        // FIXED: Stop interval timer safely
+        if (timerInterval) clearInterval(timerInterval);
+        
+        // FIXED: date.toDateString() inline formatting applied cleanly
+        const dateString = new Date().toDateString();
+        console.log(`Execution wrapped up. Total time spent tracking: ${totaltimespent}s`);
+        
+        console.log('Dispatching telemetry payloads and clearing local workspace...');
+        await sendAndCleanupScreenshots(
+            `Dear User, Your task for today (${dateString}) has been processed. Total time monitored: ${totaltimespent} seconds. Please check screenshots below.`, 
+            'https://askninjabot.onrender.com/forwardfeedback'
+        );
+        
         await browser.close();
         console.log('Browser closed safely.');
     }
 }
 
-function timer(){
-totaltimespent = totaltimespent + 1
-}
-
-module.exports = Trustatask
+module.exports = Trustatask;
