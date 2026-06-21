@@ -20,12 +20,12 @@ async function Trustatask() {
     const sessionPath = path.join(__dirname, 'browser_session');
 
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         defaultViewport: null,
-        slowMo: 100,
+       // slowMo: 100,
         userDataDir: sessionPath, // Keeps your login details persistent
-        args: ['--start-maximized'],
-        executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+       // args: ['--start-maximized'],
+      //  executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     });
 
     const page = await browser.newPage();
