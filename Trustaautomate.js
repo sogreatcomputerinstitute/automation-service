@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const path = require('path');
 const fs = require('fs');
 const sendAndCleanupScreenshots = require('./sendfeedback.js');
@@ -19,13 +19,15 @@ async function Trustatask() {
 
     const sessionPath = path.join(__dirname, 'browser_session');
 
-    const browser = await puppeteer.launch({
-        headless: true,
-        defaultViewport: null,
-       // slowMo: 100,
-        userDataDir: sessionPath, // Keeps your login details persistent
-       // args: ['--start-maximized'],
-      //  executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+ const browser = await puppeteer.launch({
+        headless: true, // Perfect for Render
+        defaultViewport: { width: 1280, height: 800 }, // Set standard desktop size instead of null/maximized
+        userDataDir: sessionPath,
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage' // Prevents memory crashes on cloud servers
+        ]
     });
 
     const page = await browser.newPage();
