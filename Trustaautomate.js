@@ -76,7 +76,8 @@ async function Trustatask() {
         }
 
         // --- FIXED: TASK EXECUTION MOVED OUTSIDE OF LOGIN IF-BLOCK ---
-        
+         await page.screenshot({ path: './screenshots/homepage.png', fullPage: true });
+        await new Promise(resolve => setTimeout(resolve, 5000));
         // 1. REGULAR TASKS
         console.log('Navigating to regular tasks...');
         // FIXED: Shifted to domcontentloaded with a safer 30s timeout execution
@@ -113,9 +114,11 @@ async function Trustatask() {
     } catch (error) {
         console.error('An error occurred during execution:', error);
     } finally {
+        await page.goto('https://trusta.live/dashboard', { waitUntil: 'domcontentloaded', timeout: 30000 });
         // FIXED: Stop interval timer safely
         if (timerInterval) clearInterval(timerInterval);
-        
+        await new Promise(resolve => setTimeout(resolve, 5000));
+         await page.screenshot({ path: './screenshots/home_final.png', fullPage: true });
         // FIXED: date.toDateString() inline formatting applied cleanly
         const dateString = new Date().toDateString();
         console.log(`Execution wrapped up. Total time spent tracking: ${totaltimespent}s`);
