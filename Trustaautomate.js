@@ -20,9 +20,9 @@ const usersToProcess = [
         telegramid: "2141241"
     },
     {
-        email: "user2@example.com",
-        pass: "securepassword456",
-        telegramid: "2141241"
+        email: "akatareynold@gmail.com",
+        pass: "Reynold2011.",
+        telegramid: "8861514645"
     }
 ];
 
