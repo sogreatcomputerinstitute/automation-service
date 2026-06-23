@@ -47,7 +47,7 @@ async function runSingleUserTask(userCredentials, index) {
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage' 
+            '--disable-dev-shm-usage',  
         ]
     });
 
@@ -55,7 +55,7 @@ async function runSingleUserTask(userCredentials, index) {
 
     try {
         console.log('Navigating to Trusta...');
-        await page.goto('https://trusta.live/login', { waitUntil: 'networkidle2', timeout: 90000 });
+        await page.goto('https://trusta.live/login', { waitUntil: 'domcontentloaded', timeout: 90000 });
 
         // Check if we are already logged in or if we got sent to a login screen
         const isLoginPage = await page.evaluate(() => {
