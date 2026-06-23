@@ -17,7 +17,7 @@ const usersToProcess = [
     {
         email: process.env.USER_EMAIL,
         pass: process.env.USER_PASS,
-        telegramid: "2141241"
+        telegramid: "8680817767"
     },
     {
         email: "akatareynold@gmail.com",
