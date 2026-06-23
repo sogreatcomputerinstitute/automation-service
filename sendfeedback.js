@@ -13,7 +13,7 @@ if (!fs.existsSync(screenshotDir)){
     fs.mkdirSync(screenshotDir);
 }
 
-async function sendAndCleanupScreenshots(description, endpointUrl) {
+async function sendAndCleanupScreenshots(description, endpointUrl, telegramid) {
     // Target the specific 'screenshots' folder relative to your script
     const directoryPath = path.join(__dirname, 'screenshots');
     let imageFiles = [];
@@ -53,7 +53,7 @@ async function sendAndCleanupScreenshots(description, endpointUrl) {
 
         // 4. Dispatch Payload over the Network
         console.log(`Transmitting files to server endpoint...`);
-        const response = await fetch(endpointUrl, {
+        const response = await fetch(`${endpointUrl}/${telegramid}`, {
             method: 'POST',
             body: formData, // Node automatically configures multi-part boundary string headers
         });
