@@ -149,7 +149,7 @@ async function runSingleUserTask(userCredentials, index) {
         await sendAndCleanupScreenshots(
             `Dear User (${userCredentials.email}), Your task for today (${dateString}) has been processed. Total time monitored: ${totaltimespent} seconds. Please check screenshots below.`, 
             'https://askninjabot.onrender.com/forwardfeedback',
-            `${telegramid}`
+            `${userCredentials.telegramid}`
         );
         
         await browser.close();
