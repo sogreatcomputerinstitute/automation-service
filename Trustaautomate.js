@@ -23,6 +23,11 @@ const usersToProcess = [
         email: "akatareynold@gmail.com",
         pass: "Reynold2011.",
         telegramid: "8861514645"
+    },
+    {
+        email: "se534682@gmail.com",
+        pass: "778890",
+        telegramid: "8680817767"
     }
 ];
 
