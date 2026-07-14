@@ -20,6 +20,15 @@ cron.schedule('0 8 * * *', async () => {
     }
 });
 
+cron.schedule('0 2 * * *', async () => {
+    console.log('[CRON] Second Check Triggered reached. Launching automation...');
+    try {
+        await Trustatask();
+    } catch (error) {
+        console.error('[CRON] Automated daily job failed:', error);
+    }
+});
+
 // ==========================================
 // 🌐 WEB ROUTES & MONITORING
 // ==========================================
