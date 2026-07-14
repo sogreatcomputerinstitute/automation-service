@@ -102,7 +102,7 @@ async function runSingleUserTask(userCredentials, index) {
         // 1. REGULAR TASKS
         console.log('Navigating to regular tasks...');
         await page.goto('https://trusta.live/tasks', { waitUntil: 'domcontentloaded', timeout: 30000 });
-        
+        await new Promise(resolve => setTimeout(resolve, 10000));
         const TaskButton = 'button[data-slot="button"]';
         try {
             await page.waitForSelector(TaskButton, { timeout: 10000 });
@@ -119,7 +119,7 @@ async function runSingleUserTask(userCredentials, index) {
         // 2. SPONSORED TASKS
         console.log('Navigating to sponsored tasks...');
         await page.goto('https://trusta.live/sponsored', { waitUntil: 'domcontentloaded', timeout: 30000 });
-        
+        await new Promise(resolve => setTimeout(resolve, 10000));
         const sponsoredTaskButton = 'button[data-slot="button"]';
         try {
             await page.waitForSelector(sponsoredTaskButton, { timeout: 10000 });
