@@ -158,11 +158,11 @@ async function runSingleUserTask(userCredentials, index) {
 }
 
 // Master function to execute all tasks in order
-async function Trustatask() {
+async function Leadstask() {
     for (let i = 0; i < usersToProcess.length; i++) {
         await runSingleUserTask(usersToProcess[i], i);
     }
     console.log('\n✅ All user automation tasks completed successfully.');
 }
 
-module.exports = Trustatask;
+module.exports = Leadstask;
