@@ -1,6 +1,7 @@
 const express = require('express');
 const cron = require('node-cron');
 const Trustatask = require('./Trustaautomate.js');
+const Leadtask = require('./Leadsafrica.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +16,7 @@ cron.schedule('0 8 * * *', async () => {
     console.log('[CRON] Midnight schedule reached. Launching automation...');
     try {
         await Trustatask();
+        await LeadTask();
     } catch (error) {
         console.error('[CRON] Automated daily job failed:', error);
     }
